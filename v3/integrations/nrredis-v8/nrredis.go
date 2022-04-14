@@ -57,23 +57,25 @@ func NewHook(opts *redis.Options) redis.Hook {
 }
 
 func (h hook) before(ctx context.Context, operation string) (context.Context, error) {
-	fmt.Printf("[naman] came here!")
+	fmt.Println("[naman] came here!")
 	txn := newrelic.FromContext(ctx)
 	if txn == nil {
 		return ctx, nil
 	}
-	fmt.Printf("[naman] txn found!")
+	fmt.Println("[naman] txn found!")
 	s := h.segment
 	s.StartTime = txn.StartSegmentNow()
-	fmt.Printf("[naman] segment started!")
+	fmt.Println("[naman] segment started!")
 	s.Operation = operation
 	ctx = context.WithValue(ctx, segmentContextKey, &s)
-	fmt.Printf("[naman] returning")
+	fmt.Printf("[naman] returning for operation: %s segment: %+v \n", operation, s)
 	return ctx, nil
 }
 
 func (h hook) after(ctx context.Context) {
+	fmt.Println("[naman] trying to call after")
 	if segment, ok := ctx.Value(segmentContextKey).(interface{ End() }); ok {
+		fmt.Println("[naman] after called")
 		segment.End()
 	}
 }
